@@ -52,9 +52,11 @@ class ExportVertexAIVectorSearch(ExportVDB):
             indexes = self.args["index"].split(",")
             for index in indexes:
                 filter_by = f'display_name="{index}"'
+                print(filter_by)
                 fetched_index = [index.resource_name 
                                  for index in vs.list(filter=filter_by)]
                 index_names.extend(fetched_index)
+        print(index_names)
 
         index_metas = {}
         for index_name in tqdm(index_names, desc="Fetching indexes"):
@@ -96,8 +98,8 @@ class ExportVertexAIVectorSearch(ExportVDB):
         # get index endpoint resource id and deployed index id
         index_endpoint_name, deployed_index_id = (
             self.get_index_endpoint_name(index_name=index_name))
-        # print(f"index_endpoint_name = {index_endpoint_name}")
-        # print(f"deployed_index_id   = {deployed_index_id}")
+        print(f"index_endpoint_name = {index_endpoint_name}")
+        print(f"deployed_index_id   = {deployed_index_id}")
 
         # define index and index endpoint
         index = vs(index_name=index_name)
@@ -124,7 +126,7 @@ class ExportVertexAIVectorSearch(ExportVDB):
             datapoint_ids = [p.id for p in neighbors[0]]
             datapoints = index_endpoint.read_index_datapoints(deployed_index_id=deployed_index_id, 
                                                               ids=datapoint_ids)
-        # print(f"# of neighbors = {len(neighbors)}")
+        print(f"# of neighbors = {len(neighbors)}")
 
         vectors = None
         metadata = None
@@ -133,10 +135,10 @@ class ExportVertexAIVectorSearch(ExportVDB):
             metadata = {pt.datapoint_id:{md.namespace:list(md.allow_list) for md in pt.restricts} 
                         for pt in datapoints if pt.restricts}
 
-        # print(f"# of vectors = {len(vectors)}")
+        print(f"# of vectors = {len(vectors)}")
 
         num_vectors_exported = self.save_vectors_to_parquet(
-            vectors, metadata, self.file_ctr, vectors_directory
+            vectors, metadata, vectors_directory
         )
         pbar.update(len(vectors))
 
